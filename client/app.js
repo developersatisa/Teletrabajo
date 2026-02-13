@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginError = document.getElementById('loginError');
 
         try {
-            const response = await fetch('http://localhost:8000/login', {
+            const response = await fetch('/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         data.id_usuario = currentUser.id;
 
         try {
-            const response = await fetch('http://localhost:8000/teletrabajos/', {
+            const response = await fetch('/teletrabajos/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchTeletrabajos() {
         try {
-            const response = await fetch('http://localhost:8000/teletrabajos/');
+            const response = await fetch('/teletrabajos/');
             if (response.ok) {
                 const allData = await response.json();
                 teletrabajos = allData.filter(t => t.id_usuario === currentUser.id);
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUser || !currentUser.deptonomi) return;
 
         try {
-            const response = await fetch(`http://localhost:8000/collaborators?deptonomi=${encodeURIComponent(currentUser.deptonomi)}`);
+            const response = await fetch(`/collaborators?deptonomi=${encodeURIComponent(currentUser.deptonomi)}`);
             if (response.ok) {
                 collaborators = await response.json();
                 renderCollaborators(collaborators);
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function deleteTeletrabajo(id) {
         try {
-            const response = await fetch(`http://localhost:8000/teletrabajos/${id}`, { method: 'DELETE' });
+            const response = await fetch(`/teletrabajos/${id}`, { method: 'DELETE' });
             if (response.ok) fetchTeletrabajos();
         } catch (error) {
             console.error('Error deleting:', error);
