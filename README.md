@@ -49,3 +49,4 @@ Este proyecto consiste en una API backend con FastAPI y una interfaz de dashboar
 - **Calendario Interactivo:** Visualiza los días de teletrabajo agendados. Haz clic en un día para iniciar una nueva solicitud.
 - **Formulario de Solicitud:** Gestiona datos como solicitante, departamento, nivel y periodo.
 - **Diseño Premium:** Interfaz moderna con glassmorphism, fuentes optimizadas y animaciones suaves.
+
