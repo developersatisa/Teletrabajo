@@ -9,6 +9,9 @@ import os
 
 import crud, models, schemas, database
 
+# Create tables if not exist
+models.Base.metadata.create_all(bind=database.engine)
+
 app = FastAPI(title="Teletrabajo Atisa")
 
 @app.exception_handler(RequestValidationError)
@@ -85,10 +88,21 @@ def create_teletrabajo(tele_data: schemas.TeletrabajoCreate, db: Session = Depen
 
 @app.delete("/teletrabajos/{tele_id}")
 def delete_teletrabajo(tele_id: int, db: Session = Depends(database.get_db)):
-    success = crud.delete_teletrabajo(db, tele_id=tele_id)
+    success = crud.delete_teletrabajo(db=db, tele_id=tele_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Teletrabajo not found")
-    return {"detail": "Successfully deleted"}
+        raise HTTPException(status_code=404, detail="Teletrabajo no encontrado")
+    return {"message": "Teletrabajo eliminado"}
+
+@app.get("/config/", response_model=schemas.Configuracion)
+def get_config(db: Session = Depends(database.get_db)):
+    db_config = crud.get_config(db)
+    if not db_config:
+        return crud.create_default_config(db)
+    return db_config
+
+@app.put("/config/", response_model=schemas.Configuracion)
+def update_config(config: schemas.ConfiguracionCreate, db: Session = Depends(database.get_db)):
+    return crud.update_config(db, config)
 
 # Serve Frontend
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -21,3 +21,27 @@ def delete_teletrabajo(db: Session, tele_id: int):
         db.commit()
         return True
     return False
+
+def get_config(db: Session):
+    return db.query(models.Configuracion).first()
+
+def create_default_config(db: Session):
+    db_config = models.Configuracion(max_quarterly_days=30, min_presence_daily=50, block_max_days=False, block_min_presence=False)
+    db.add(db_config)
+    db.commit()
+    db.refresh(db_config)
+    return db_config
+
+def update_config(db: Session, config: schemas.ConfiguracionCreate):
+    db_config = db.query(models.Configuracion).first()
+    if not db_config:
+        db_config = create_default_config(db)
+    
+    db_config.max_quarterly_days = config.max_quarterly_days
+    db_config.min_presence_daily = config.min_presence_daily
+    db_config.block_max_days = config.block_max_days
+    db_config.block_min_presence = config.block_min_presence
+    
+    db.commit()
+    db.refresh(db_config)
+    return db_config

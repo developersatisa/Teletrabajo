@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, DateTime, Text, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -30,3 +30,12 @@ class Teletrabajo(Base):
     fecha = Column(Date, nullable=False)
     descripcion = Column(Text)
     periodo = Column(String(100))
+
+class Configuracion(Base):
+    __tablename__ = "configuracion"
+
+    id = Column(Integer, primary_key=True, index=True)
+    max_quarterly_days = Column(Integer, default=30)
+    min_presence_daily = Column(Integer, default=50)
+    block_max_days = Column(Boolean, default=False)
+    block_min_presence = Column(Boolean, default=False)

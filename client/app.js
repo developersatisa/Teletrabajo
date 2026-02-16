@@ -66,11 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
         blockMinPresence: false
     };
 
-    try {
-        const saved = localStorage.getItem('teletrabajoSettings');
-        if (saved) appSettings = { ...appSettings, ...JSON.parse(saved) };
-    } catch (e) {
-        console.error("Error loading settings:", e);
+    async function loadSettings() {
+        try {
+            const response = await fetch('/config/');
+            if (response.ok) {
+                const config = await response.json();
+                appSettings = {
+                    maxQuarterlyDays: config.max_quarterly_days,
+                    minPresenceDaily: config.min_presence_daily,
+                    blockMaxDays: config.block_max_days,
+                    blockMinPresence: config.block_min_presence
+                };
+                loadSettingsToUI();
+                // Refresh anything that depends on settings
+                updateUI();
+            }
+        } catch (e) {
+            console.error("Error loading settings from API:", e);
+        }
     }
 
     // Check Auth on Load
@@ -156,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateStaticProfileInfo();
         userAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nombre)}&background=9CBA39&color=fff`;
-        loadSettingsToUI();
+        loadSettings(); // Load from API
         fetchTeletrabajos();
         renderCalendar();
         updateUI();
@@ -171,20 +184,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (saveSettingsBtn) {
-        saveSettingsBtn.addEventListener('click', () => {
-            appSettings = {
-                maxQuarterlyDays: parseInt(maxQuarterlyDaysInput.value) || 30,
-                minPresenceDaily: parseInt(minPresenceDailyInput.value) || 50,
-                blockMaxDays: blockMaxDaysCheck.checked,
-                blockMinPresence: blockMinPresenceCheck.checked
+        saveSettingsBtn.addEventListener('click', async () => {
+            const newSettings = {
+                max_quarterly_days: parseInt(maxQuarterlyDaysInput.value) || 30,
+                min_presence_daily: parseInt(minPresenceDailyInput.value) || 50,
+                block_max_days: blockMaxDaysCheck.checked,
+                block_min_presence: blockMinPresenceCheck.checked
             };
-            localStorage.setItem('teletrabajoSettings', JSON.stringify(appSettings));
-            showNotification('Configuración guardada correctamente');
 
-            // Re-render statistics to update "Total Days" and other things
-            const activeNav = document.querySelector('.nav-links li.active');
-            if (activeNav && activeNav.getAttribute('data-view') === 'statistics') {
-                renderStatistics();
+            try {
+                const response = await fetch('/config/', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newSettings)
+                });
+
+                if (response.ok) {
+                    const savedConfig = await response.json();
+                    appSettings = {
+                        maxQuarterlyDays: savedConfig.max_quarterly_days,
+                        minPresenceDaily: savedConfig.min_presence_daily,
+                        blockMaxDays: savedConfig.block_max_days,
+                        blockMinPresence: savedConfig.block_min_presence
+                    };
+                    showNotification('Configuración guardada correctamente en el servidor');
+
+                    // Re-render statistics
+                    const activeNav = document.querySelector('.nav-links li.active');
+                    if (activeNav && activeNav.getAttribute('data-view') === 'statistics') {
+                        renderStatistics();
+                    }
+                } else {
+                    showNotification('Error al guardar configuración', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showNotification('Error de conexión al guardar', 'error');
             }
         });
     }

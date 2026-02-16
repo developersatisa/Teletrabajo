@@ -29,3 +29,21 @@ class UserOut(BaseModel):
     cod_dep: Optional[str]
     deptonomi: Optional[str]
     nivel: str
+
+    class Config:
+        from_attributes = True
+
+class ConfiguracionBase(BaseModel):
+    max_quarterly_days: int
+    min_presence_daily: int
+    block_max_days: bool
+    block_min_presence: bool
+
+class ConfiguracionCreate(ConfiguracionBase):
+    pass
+
+class Configuracion(ConfiguracionBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
