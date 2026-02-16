@@ -72,8 +72,12 @@ def get_collaborators(deptonomi: str, db: Session = Depends(database.get_db)):
     return collaborators_data
 
 @app.get("/teletrabajos/", response_model=List[schemas.Teletrabajo])
-def read_teletrabajos(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
+def read_teletrabajos(skip: int = 0, limit: int = 1000, db: Session = Depends(database.get_db)):
     return crud.get_teletrabajos(db, skip=skip, limit=limit)
+
+@app.get("/teletrabajos/{user_id}", response_model=List[schemas.Teletrabajo])
+def read_user_teletrabajos(user_id: int, db: Session = Depends(database.get_db)):
+    return db.query(models.Teletrabajo).filter(models.Teletrabajo.id_usuario == user_id).all()
 
 @app.post("/teletrabajos/", response_model=schemas.Teletrabajo)
 def create_teletrabajo(tele_data: schemas.TeletrabajoCreate, db: Session = Depends(database.get_db)):

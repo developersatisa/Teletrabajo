@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewDashboard = document.getElementById('dashboardView');
     const viewCollaborators = document.getElementById('collaboratorsView');
     const viewStatistics = document.getElementById('statisticsView');
+    const viewSettings = document.getElementById('settingsView');
     const collaboratorsList = document.getElementById('collaboratorsList');
     const themeToggle = document.getElementById('themeToggle');
 
@@ -37,10 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalYearDaysKpi = document.getElementById('totalYearDaysKpi');
     const topDayKpi = document.getElementById('topDayKpi');
     const topDaysList = document.getElementById('topDaysList');
-    const topRemoteListQ1 = document.getElementById('topRemoteListQ1');
-    const topRemoteListQ2 = document.getElementById('topRemoteListQ2');
-    const topRemoteListQ3 = document.getElementById('topRemoteListQ3');
-    const topRemoteListQ4 = document.getElementById('topRemoteListQ4');
+
+    // Settings elements
+    const maxQuarterlyDaysInput = document.getElementById('maxQuarterlyDays');
+    const minPresenceDailyInput = document.getElementById('minPresenceDaily');
+    const blockMaxDaysCheck = document.getElementById('blockMaxDays');
+    const blockMinPresenceCheck = document.getElementById('blockMinPresence');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 
     let monthlyChart = null;
     let weekdayChart = null;
@@ -53,6 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let teletrabajos = [];
     let collaborators = [];
     let selectedPeriod = getCurrentPeriod();
+
+    // Default Settings
+    let appSettings = {
+        maxQuarterlyDays: 30,
+        minPresenceDaily: 50,
+        blockMaxDays: false,
+        blockMinPresence: false
+    };
+
+    try {
+        const saved = localStorage.getItem('teletrabajoSettings');
+        if (saved) appSettings = { ...appSettings, ...JSON.parse(saved) };
+    } catch (e) {
+        console.error("Error loading settings:", e);
+    }
 
     // Check Auth on Load
     if (currentUser) {
@@ -137,9 +156,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateStaticProfileInfo();
         userAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nombre)}&background=9CBA39&color=fff`;
+        loadSettingsToUI();
         fetchTeletrabajos();
         renderCalendar();
         updateUI();
+    }
+
+    function loadSettingsToUI() {
+        if (!maxQuarterlyDaysInput) return;
+        maxQuarterlyDaysInput.value = appSettings.maxQuarterlyDays;
+        minPresenceDailyInput.value = appSettings.minPresenceDaily;
+        blockMaxDaysCheck.checked = appSettings.blockMaxDays;
+        blockMinPresenceCheck.checked = appSettings.blockMinPresence;
+    }
+
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener('click', () => {
+            appSettings = {
+                maxQuarterlyDays: parseInt(maxQuarterlyDaysInput.value) || 30,
+                minPresenceDaily: parseInt(minPresenceDailyInput.value) || 50,
+                blockMaxDays: blockMaxDaysCheck.checked,
+                blockMinPresence: blockMinPresenceCheck.checked
+            };
+            localStorage.setItem('teletrabajoSettings', JSON.stringify(appSettings));
+            showNotification('Configuración guardada correctamente');
+
+            // Re-render statistics to update "Total Days" and other things
+            const activeNav = document.querySelector('.nav-links li.active');
+            if (activeNav && activeNav.getAttribute('data-view') === 'statistics') {
+                renderStatistics();
+            }
+        });
     }
 
     function updateStaticProfileInfo() {
@@ -202,31 +249,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Navigation Logic
+    function switchView(viewName) {
+        const views = {
+            'dashboard': viewDashboard,
+            'collaborators': viewCollaborators,
+            'statistics': viewStatistics,
+            'settings': viewSettings
+        };
+
+        // Hide all views
+        Object.values(views).forEach(v => {
+            if (v) v.style.display = 'none';
+        });
+
+        // Show target view
+        const target = views[viewName];
+        if (target) target.style.display = 'block';
+
+        // Update Nav UI
+        navLinks.forEach(link => {
+            if (link.getAttribute('data-view') === viewName) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        // Run view-specific logic
+        if (viewName === 'dashboard') {
+            updateStaticProfileInfo();
+            updateUI();
+        } else if (viewName === 'collaborators') {
+            fetchCollaborators();
+        } else if (viewName === 'statistics') {
+            renderStatistics();
+        } else if (viewName === 'settings') {
+            loadSettingsToUI();
+        }
+    }
+
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             const view = link.getAttribute('data-view');
-            if (!view) return;
-
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-
-            if (view === 'dashboard') {
-                if (viewDashboard) viewDashboard.style.display = 'block';
-                if (viewCollaborators) viewCollaborators.style.display = 'none';
-                if (viewStatistics) viewStatistics.style.display = 'none';
-                updateStaticProfileInfo();
-                updateUI();
-            } else if (view === 'collaborators') {
-                if (viewDashboard) viewDashboard.style.display = 'none';
-                if (viewCollaborators) viewCollaborators.style.display = 'block';
-                if (viewStatistics) viewStatistics.style.display = 'none';
-                fetchCollaborators();
-            } else if (view === 'statistics') {
-                if (viewDashboard) viewDashboard.style.display = 'none';
-                if (viewCollaborators) viewCollaborators.style.display = 'none';
-                if (viewStatistics) viewStatistics.style.display = 'block';
-                renderStatistics();
-            }
+            if (view) switchView(view);
         });
     });
 
@@ -268,6 +333,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification('Fechas no válidas', 'error');
                 return;
             }
+
+            // --- SETTINGS VALIDATION ---
+            let potentialRequests = [];
+            let currentCheck = new Date(start);
+            while (currentCheck <= end) {
+                potentialRequests.push(currentCheck.toISOString().split('T')[0]);
+                currentCheck.setDate(currentCheck.getDate() + 1);
+            }
+
+            // 1. Check Max Quarterly Days
+            const requestedByQuarter = {};
+            potentialRequests.forEach(dateStr => {
+                const d = new Date(dateStr);
+                const q = `T${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`;
+                requestedByQuarter[q] = (requestedByQuarter[q] || 0) + 1;
+            });
+
+            for (const qKey in requestedByQuarter) {
+                const existingInQuarter = teletrabajos.filter(t => {
+                    const d = new Date(t.fecha);
+                    const tPeriod = `T${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`;
+                    return tPeriod === qKey;
+                }).length;
+
+                const totalInQuarter = existingInQuarter + requestedByQuarter[qKey];
+                const limit = appSettings.maxQuarterlyDays || 30;
+
+                if (totalInQuarter > limit) {
+                    const msg = `Máximo trimestral excedido para ${qKey} (${existingInQuarter} guardados + ${requestedByQuarter[qKey]} nuevos > ${limit} permitidos).`;
+                    if (appSettings.blockMaxDays) {
+                        showNotification(msg + ' Bloqueado por ajustes.', 'error');
+                        return;
+                    } else {
+                        showNotification(msg + ' Ignorando política por configuración.', 'error');
+                    }
+                }
+            }
+
+            // 2. Check Min Presence Daily
+            const totalTeamSize = collaborators.length || 1;
+            const minOfficePeople = Math.ceil((appSettings.minPresenceDaily / 100) * totalTeamSize);
+
+            for (const dateStr of potentialRequests) {
+                const alreadyRemote = collaborators.filter(c =>
+                    c.id_usuario !== currentUser.id &&
+                    c.fechas && c.fechas.some(f => (typeof f === 'string' ? f : f.fecha) === dateStr)
+                ).length;
+
+                const officePeopleIfRequested = totalTeamSize - (alreadyRemote + 1);
+
+                if (officePeopleIfRequested < minOfficePeople) {
+                    const msg = `Falta de presencialidad el día ${dateStr}.`;
+                    if (appSettings.blockMinPresence) {
+                        showNotification(msg + ' Bloqueado por ajustes.', 'error');
+                        return;
+                    } else {
+                        showNotification(msg + ' Alerta de baja presencialidad.', 'error');
+                    }
+                }
+            }
+            // --- END SETTINGS VALIDATION ---
 
             const requests = [];
             let current = new Date(start);
@@ -313,10 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchTeletrabajos() {
         try {
-            const response = await fetch('/teletrabajos/');
+            // Optimized: Fetch only current user's records
+            const response = await fetch(`/teletrabajos/${currentUser.id}`);
             if (response.ok) {
-                const allData = await response.json();
-                teletrabajos = allData.filter(t => t.id_usuario === currentUser.id);
+                teletrabajos = await response.json();
 
                 fetchCollaborators(); // Update collaborators count after loading teletrabajos
                 updateUI();
@@ -416,8 +542,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateStats() {
-        const filtered = teletrabajos.filter(t => (t.periodo || getCurrentPeriod(new Date(t.fecha))) === selectedPeriod);
-        statsRequested.textContent = filtered.length;
+        // Revert to QUARTERLY stats as requested by user
+        const quarter = Math.floor(currentDate.getMonth() / 3) + 1;
+        const year = currentDate.getFullYear();
+        const activePeriod = `T${quarter} ${year}`;
+
+        const filtered = teletrabajos.filter(t => {
+            const d = new Date(t.fecha);
+            const tPeriod = `T${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`;
+            return tPeriod === activePeriod;
+        });
+
+        if (statsRequested) {
+            const limit = appSettings.maxQuarterlyDays || 30;
+            statsRequested.innerHTML = `${filtered.length} <small style="font-size: 0.8rem; opacity: 0.6;">/ ${limit}</small>`;
+        }
+
+        if (activePeriodDisplay) {
+            activePeriodDisplay.textContent = activePeriod;
+        }
     }
 
 
@@ -531,10 +674,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStatistics() {
         if (!viewStatistics || viewStatistics.style.display === 'none') return;
 
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        const todayStr = now.toISOString().split('T')[0];
+        const viewYear = currentDate.getFullYear();
+        const viewMonth = currentDate.getMonth();
+        const monthKey = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
+        const todayStr = new Date().toISOString().split('T')[0];
 
         // 1. Calculations from ALL collaborators (Team View)
         const teamRecords = [];
@@ -546,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         id_usuario: collab.id_usuario,
                         nombre: collab.nombre,
                         fecha: dateStr,
-                        descripcion: typeof f === 'object' ? f.descripcion : '',
                         dateObj: new Date(dateStr)
                     });
                 });
@@ -563,16 +705,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (coverageKpi) coverageKpi.textContent = `${presencePercent}%`;
 
-        // KPI: Total Days current Month (Team)
-        const monthRecords = teamRecords.filter(r => r.dateObj.getMonth() === currentMonth && r.dateObj.getFullYear() === currentYear);
-        if (totalMonthDaysKpi) totalMonthDaysKpi.textContent = monthRecords.length;
+        // KPI: Total Days current VIEWED Quarter (Team)
+        // Calculate based on the viewed month's quarter
+        const currentQuarterIndex = Math.floor(viewMonth / 3);
+        const quarterRecords = teamRecords.filter(r => {
+            return r.dateObj.getFullYear() === viewYear && Math.floor(r.dateObj.getMonth() / 3) === currentQuarterIndex;
+        });
 
-        // KPI: Top Requested Days List (Team)
+        const limitPerPerson = appSettings.maxQuarterlyDays || 30;
+        const totalTeamLimit = limitPerPerson * totalTeam;
+
+        if (totalMonthDaysKpi) totalMonthDaysKpi.textContent = `${quarterRecords.length} / ${totalTeamLimit}`;
+
+        // KPI: Top Requested Days List (Monthly for the viewed month)
+        // We still need monthRecords for other stats like Density and Top Days
+        const monthRecords = teamRecords.filter(r => r.fecha.startsWith(monthKey));
         const dayCounts = {};
-        teamRecords.forEach(r => {
-            if (r.dateObj.getFullYear() === currentYear) {
-                dayCounts[r.fecha] = (dayCounts[r.fecha] || 0) + 1;
-            }
+        monthRecords.forEach(r => {
+            dayCounts[r.fecha] = (dayCounts[r.fecha] || 0) + 1;
         });
 
         const sortedDays = Object.entries(dayCounts)
@@ -596,15 +746,45 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // New KPI: Top Remote Workers (Monthly for consistent matching)
+        const topMonthlyList = document.getElementById('topRemoteListMonth');
+        if (topMonthlyList) {
+            topMonthlyList.innerHTML = '';
+            const ranking = collaborators
+                .map(c => {
+                    const monthlyFechas = (c.fechas || []).filter(f => {
+                        const dateStr = typeof f === 'string' ? f : f.fecha;
+                        return dateStr.startsWith(monthKey);
+                    });
+                    return { nombre: c.nombre, count: monthlyFechas.length };
+                })
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 5)
+                .filter(r => r.count > 0);
+
+            if (ranking.length === 0) {
+                topMonthlyList.innerHTML = '<li class="ranking-item" style="opacity: 0.5; font-size: 0.8rem; justify-content: center;">Sin registros este mes</li>';
+            } else {
+                ranking.forEach((r, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'ranking-item';
+                    li.innerHTML = `
+                        <span class="ranking-name">${idx + 1}. ${r.nombre}</span>
+                        <span class="ranking-value">${r.count} <small>días</small></span>
+                    `;
+                    topMonthlyList.appendChild(li);
+                });
+            }
+        }
+
         // KPI: Avg Weekly Days per person (Team)
-        // Hardcoded estimation: days / 4 weeks / team size
         const avgWeekly = (monthRecords.length / (totalTeam * 4)).toFixed(1);
         if (avgWeeklyKpi) avgWeeklyKpi.textContent = avgWeekly;
 
-        // 2. Monthly Trend Chart
+        // 2. Monthly Trend Chart (Yearly Context)
         const monthlyData = Array(12).fill(0);
         teamRecords.forEach(r => {
-            if (r.dateObj.getFullYear() === currentYear) {
+            if (r.dateObj.getFullYear() === viewYear) {
                 monthlyData[r.dateObj.getMonth()]++;
             }
         });
@@ -613,11 +793,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. Weekday Density Chart
         const weekdayData = Array(5).fill(0); // Mon-Fri
-        teamRecords.forEach(r => {
-            const day = r.dateObj.getDay(); // 0 is Sunday
-            if (day >= 1 && day <= 5) {
-                weekdayData[day - 1]++;
-            }
+        monthRecords.forEach(r => {
+            const day = r.dateObj.getDay();
+            if (day >= 1 && day <= 5) weekdayData[day - 1]++;
         });
 
         renderHorizontalBarChart('weekdayChart', weekdayChart, weekdayData, ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']);
@@ -661,7 +839,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .map(c => {
                         const quarterlyFechas = (c.fechas || []).filter(f => {
                             const d = new Date(typeof f === 'string' ? f : f.fecha);
-                            return d.getFullYear() === currentYear && Math.floor(d.getMonth() / 3) === q.index;
+                            return d.getFullYear() === viewYear && Math.floor(d.getMonth() / 3) === q.index;
                         });
                         return { nombre: c.nombre, count: quarterlyFechas.length };
                     })
@@ -673,11 +851,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     listEl.innerHTML = '<li class="ranking-item" style="opacity: 0.5; font-size: 0.8rem; justify-content: center;">Sin registros</li>';
                 } else {
                     ranking.forEach((r, idx) => {
+                        const limit = appSettings.maxQuarterlyDays || 30;
+                        const isOverLimit = r.count > limit;
+                        const colorStyle = isOverLimit ? 'color: #dc2626; font-weight: bold;' : '';
+
                         const li = document.createElement('li');
                         li.className = 'ranking-item';
+                        if (isOverLimit) li.style.borderLeft = '4px solid #dc2626';
+
                         li.innerHTML = `
-                            <span class="ranking-name">${idx + 1}. ${r.nombre}</span>
-                            <span class="ranking-value">${r.count} <small>días</small></span>
+                            <span class="ranking-name" style="${colorStyle}">${idx + 1}. ${r.nombre}</span>
+                            <span class="ranking-value" style="${colorStyle}">${r.count} <small>días</small></span>
                         `;
                         listEl.appendChild(li);
                     });

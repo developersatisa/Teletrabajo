@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teletrabajo - Atisa</title>
-    <link rel="stylesheet" href="style.css?v=2.1">
+    <link rel="stylesheet" href="style.css?v=2.12">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -115,7 +115,7 @@
                                 </div>
                             </div>
                             <div class="stat-item">
-                                <span class="label">Días Solicitados</span>
+                                <span class="label">Días Solicitados (Trimestre)</span>
                                 <span class="value" id="statsRequested">0</span>
                             </div>
                             <div class="stat-item">
@@ -165,7 +165,7 @@
                     <div class="card kpi-card green">
                         <div class="kpi-icon"><i class="fas fa-calendar-check"></i></div>
                         <div class="kpi-content">
-                            <span class="kpi-label">Total Días (Mes)</span>
+                            <span class="kpi-label">Total Días (Trimestre)</span>
                             <span class="kpi-value" id="totalMonthDaysKpi">0</span>
                         </div>
                     </div>
@@ -174,13 +174,6 @@
                         <div class="kpi-content">
                             <span class="kpi-label">Media Días/Semana</span>
                             <span class="kpi-value" id="avgWeeklyKpi">0.0</span>
-                        </div>
-                    </div>
-                    <div class="card kpi-card orange">
-                        <div class="kpi-icon"><i class="fas fa-calendar-star"></i></div>
-                        <div class="kpi-content">
-                            <span class="kpi-label">Top Días Remotos</span>
-                            <span class="kpi-value" id="topDayKpi" style="font-size: 1.2rem;">-</span>
                         </div>
                     </div>
                 </div>
@@ -201,39 +194,7 @@
                         </div>
                     </div>
 
-                    <!-- LINE 2: Team Ranking (Full width) -->
-                    <div class="card list-card span-12">
-                        <h3>Ránking de Colaboradores por Trimestre</h3>
-                        <div class="quarters-grid"
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-                            <div class="quarter-box">
-                                <h4
-                                    style="color: var(--atisa-azul); margin-bottom: 0.5rem; border-bottom: 2px solid var(--atisa-azul); padding-bottom: 5px;">
-                                    T1 (Ene-Mar)</h4>
-                                <ul id="topRemoteListQ1" class="ranking-list"></ul>
-                            </div>
-                            <div class="quarter-box">
-                                <h4
-                                    style="color: var(--atisa-verde-claro); margin-bottom: 0.5rem; border-bottom: 2px solid var(--atisa-verde-claro); padding-bottom: 5px;">
-                                    T2 (Abr-Jun)</h4>
-                                <ul id="topRemoteListQ2" class="ranking-list"></ul>
-                            </div>
-                            <div class="quarter-box">
-                                <h4
-                                    style="color: var(--atisa-naranja); margin-bottom: 0.5rem; border-bottom: 2px solid var(--atisa-naranja); padding-bottom: 5px;">
-                                    T3 (Jul-Sep)</h4>
-                                <ul id="topRemoteListQ3" class="ranking-list"></ul>
-                            </div>
-                            <div class="quarter-box">
-                                <h4
-                                    style="color: #6366f1; margin-bottom: 0.5rem; border-bottom: 2px solid #6366f1; padding-bottom: 5px;">
-                                    T4 (Oct-Dic)</h4>
-                                <ul id="topRemoteListQ4" class="ranking-list"></ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- LINE 3: Others (3 items) -->
+                    <!-- LINE 2: Trends and Density (3 items) -->
                     <div class="card chart-card span-4">
                         <h3>Tendencia de Teletrabajo Mensual</h3>
                         <div class="chart-wrapper">
@@ -249,10 +210,155 @@
                     </div>
 
                     <div class="card list-card span-4">
-                        <h3>Días con más Teletrabajo</h3>
-                        <ul id="topDaysList" class="ranking-list">
+                        <h3 style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-medal" style="color: #FFD700;"></i> Top Colaboradores del Mes
+                        </h3>
+                        <ul id="topRemoteListMonth" class="ranking-list">
                             <!-- Populated by JS -->
                         </ul>
+                    </div>
+
+                    <div id="topDaysList" style="display: none;"></div>
+
+                    <!-- LINE 3: Team Ranking (Full width) -->
+                    <div class="card list-card span-12">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0;"><i class="fas fa-history"
+                                    style="color: var(--atisa-azul); margin-right: 10px;"></i> Histórico por Trimestres
+                            </h3>
+                            <span class="badge"
+                                style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;">Año
+                                Actual</span>
+                        </div>
+
+                        <div class="quarters-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: var(--atisa-azul); margin-bottom: 0.8rem; border-bottom: 2px solid var(--atisa-azul-claro); padding-bottom: 5px;">
+                                    T1 (Ene-Mar)</h4>
+                                <ul id="topRemoteListQ1" class="ranking-list"></ul>
+                            </div>
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: var(--atisa-verde-claro); margin-bottom: 0.8rem; border-bottom: 2px solid var(--atisa-verde-claro); padding-bottom: 5px;">
+                                    T2 (Abr-Jun)</h4>
+                                <ul id="topRemoteListQ2" class="ranking-list"></ul>
+                            </div>
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: #f59e0b; margin-bottom: 0.8rem; border-bottom: 2px solid #f59e0b; padding-bottom: 5px;">
+                                    T3 (Jul-Sep)</h4>
+                                <ul id="topRemoteListQ3" class="ranking-list"></ul>
+                            </div>
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: #6366f1; margin-bottom: 0.8rem; border-bottom: 2px solid #6366f1; padding-bottom: 5px;">
+                                    T4 (Oct-Dic)</h4>
+                                <ul id="topRemoteListQ4" class="ranking-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsView" class="view-content" style="display: none;">
+                <div class="statistics-header">
+                    <div class="title-area">
+                        <h1>Ajustes de Teletrabajo</h1>
+                        <p>Configura los límites y políticas de presencialidad</p>
+                    </div>
+                </div>
+                <div class="card settings-card"
+                    style="max-width: 1000px; margin: 0 auto; padding: 0; overflow: hidden; border: none;">
+                    <div style="background: var(--atisa-verde-oscuro); color: white; padding: 2.5rem 3rem;">
+                        <h2
+                            style="margin: 0; font-family: 'Aleo', serif; font-size: 1.6rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-shield-check"></i> Configuración de Políticas Atisa
+                        </h2>
+                        <p
+                            style="margin: 0.5rem 0 0 0; opacity: 0.8; font-family: 'Lato', sans-serif; font-size: 1rem;">
+                            Establece los límites operativos y decide si la plataforma debe bloquear o solo alertar.</p>
+                    </div>
+
+                    <div style="padding: 3rem;">
+                        <!-- Policy Row 1: Monthly Limit -->
+                        <div class="setting-policy-row"
+                            style="display: grid; grid-template-columns: 1fr auto auto; gap: 3rem; align-items: center; padding-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 2.5rem;">
+                            <div class="policy-info">
+                                <h3
+                                    style="margin: 0; font-family: 'Aleo', serif; color: var(--atisa-verde-oscuro); font-size: 1.35rem; display: flex; align-items: center; gap: 0.6rem;">
+                                    <i class="fas fa-calendar-star" style="color: var(--atisa-verde-claro);"></i>
+                                    Límite de Días Trimestrales
+                                </h3>
+                                <p
+                                    style="margin: 0.6rem 0 0 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; font-family: 'Lato', sans-serif;">
+                                    Define el máximo de días de teletrabajo por persona al trimestre. Si se activa el
+                                    <strong>bloqueo</strong>, no se permitirá tramitar solicitudes que excedan este
+                                    cupo en el periodo (T1, T2, T3, T4).
+                                </p>
+                            </div>
+                            <div class="policy-value" style="width: 155px;">
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--atisa-verde-oscuro); letter-spacing: 0.5px;">Días/Trimestre</label>
+                                <input type="number" id="maxQuarterlyDays" class="setting-input" min="1" max="90"
+                                    value="30" style="text-align: center; font-size: 1.1rem;">
+                            </div>
+                            <div class="policy-toggle" style="width: 110px; text-align: center;">
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--atisa-verde-oscuro); letter-spacing: 0.5px;">Bloquear</label>
+                                <div style="display: flex; justify-content: center;">
+                                    <label class="switch-ui">
+                                        <input type="checkbox" id="blockMaxDays">
+                                        <span class="slider-ui"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Policy Row 2: Presence -->
+                        <div class="setting-policy-row"
+                            style="display: grid; grid-template-columns: 1fr auto auto; gap: 3rem; align-items: center;">
+                            <div class="policy-info">
+                                <h3
+                                    style="margin: 0; font-family: 'Aleo', serif; color: var(--atisa-verde-oscuro); font-size: 1.35rem; display: flex; align-items: center; gap: 0.6rem;">
+                                    <i class="fas fa-landmark" style="color: var(--atisa-azul);"></i>
+                                    Presencialidad Mínima Diaria
+                                </h3>
+                                <p
+                                    style="margin: 0.6rem 0 0 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; font-family: 'Lato', sans-serif;">
+                                    Porcentaje mínimo de presencia física requerida en oficina. El modo
+                                    <strong>bloqueo</strong> impide solicitudes que dejen al equipo por debajo de este
+                                    umbral.
+                                </p>
+                            </div>
+                            <div class="policy-value" style="width: 130px;">
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--atisa-verde-oscuro); letter-spacing: 0.5px;">Objetivo
+                                    %</label>
+                                <input type="number" id="minPresenceDaily" class="setting-input" min="0" max="100"
+                                    value="50" style="text-align: center; font-size: 1.1rem;">
+                            </div>
+                            <div class="policy-toggle" style="width: 110px; text-align: center;">
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--atisa-verde-oscuro); letter-spacing: 0.5px;">Bloquear</label>
+                                <div style="display: flex; justify-content: center;">
+                                    <label class="switch-ui">
+                                        <input type="checkbox" id="blockMinPresence">
+                                        <span class="slider-ui"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="margin-top: 4rem; display: flex; justify-content: flex-end; border-top: 2px solid var(--border-color); padding-top: 2rem;">
+                            <button id="saveSettingsBtn" class="btn btn-primary"
+                                style="padding: 1.25rem 4rem; border-radius: 12px; font-weight: 800; font-family: 'Aleo', serif; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; background: var(--atisa-verde-oscuro); border: none; box-shadow: 0 4px 15px rgba(0, 80, 92, 0.25);">
+                                <i class="fas fa-save"></i> Guardar Cambios Globales
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -284,7 +390,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=2.1"></script>
+    <script src="app.js?v=2.12"></script>
 </body>
 
 </html>
