@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const avgWeeklyKpi = document.getElementById('avgWeeklyKpi');
     const totalYearDaysKpi = document.getElementById('totalYearDaysKpi');
     const topDayKpi = document.getElementById('topDayKpi');
+    const topDaysList = document.getElementById('topDaysList');
     const topRemoteList = document.getElementById('topRemoteList');
 
     let monthlyChart = null;
@@ -531,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const monthRecords = teamRecords.filter(r => r.dateObj.getMonth() === currentMonth && r.dateObj.getFullYear() === currentYear);
         if (totalMonthDaysKpi) totalMonthDaysKpi.textContent = monthRecords.length;
 
-        // KPI: Top Requested Day (Team)
+        // KPI: Top Requested Days List (Team)
         const dayCounts = {};
         teamRecords.forEach(r => {
             if (r.dateObj.getFullYear() === currentYear) {
@@ -539,17 +540,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        let topDate = '-';
-        let maxCount = 0;
-        Object.entries(dayCounts).forEach(([date, count]) => {
-            if (count > maxCount) {
-                maxCount = count;
-                topDate = date;
-            }
-        });
+        const sortedDays = Object.entries(dayCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
 
         if (topDayKpi) {
-            topDayKpi.textContent = topDate !== '-' ? `${formatDate(topDate)} (${maxCount})` : '-';
+            topDayKpi.textContent = sortedDays.length > 0 ? `${formatDate(sortedDays[0][0])}` : '-';
+        }
+
+        if (topDaysList) {
+            topDaysList.innerHTML = '';
+            sortedDays.forEach((d, idx) => {
+                const li = document.createElement('li');
+                li.className = 'ranking-item';
+                li.innerHTML = `
+                    <span class="ranking-name">${idx + 1}. ${formatDate(d[0])}</span>
+                    <span class="ranking-value">${d[1]} personas</span>
+                `;
+                topDaysList.appendChild(li);
+            });
         }
 
         // KPI: Avg Weekly Days per person (Team)
@@ -601,11 +610,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderAreaChart('forecastChart', forecastChart, forecastData, forecastLabels);
 
-        // 6. Top Remote Workers List
+        // 6. Top Remote Workers List (Quarterly)
         if (topRemoteList) {
             topRemoteList.innerHTML = '';
+            const currentQuarter = Math.floor(currentMonth / 3);
+
             const ranking = collaborators
-                .map(c => ({ nombre: c.nombre, count: (c.fechas || []).length }))
+                .map(c => {
+                    const quarterlyFechas = (c.fechas || []).filter(f => {
+                        const d = new Date(typeof f === 'string' ? f : f.fecha);
+                        return d.getFullYear() === currentYear && Math.floor(d.getMonth() / 3) === currentQuarter;
+                    });
+                    return { nombre: c.nombre, count: quarterlyFechas.length };
+                })
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 5);
 
