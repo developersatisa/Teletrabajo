@@ -37,7 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalYearDaysKpi = document.getElementById('totalYearDaysKpi');
     const topDayKpi = document.getElementById('topDayKpi');
     const topDaysList = document.getElementById('topDaysList');
-    const topRemoteList = document.getElementById('topRemoteList');
+    const topRemoteListQ1 = document.getElementById('topRemoteListQ1');
+    const topRemoteListQ2 = document.getElementById('topRemoteListQ2');
+    const topRemoteListQ3 = document.getElementById('topRemoteListQ3');
+    const topRemoteListQ4 = document.getElementById('topRemoteListQ4');
 
     let monthlyChart = null;
     let weekdayChart = null;
@@ -314,17 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const allData = await response.json();
                 teletrabajos = allData.filter(t => t.id_usuario === currentUser.id);
-
-                // If currentUser is missing profile data, pick it up from first record
-                if (teletrabajos.length > 0 && (!currentUser.departamento || !currentUser.deptonomi)) {
-                    currentUser.departamento = teletrabajos[0].departamento;
-                    currentUser.cod_dep = teletrabajos[0].cod_dep;
-                    currentUser.deptonomi = teletrabajos[0].cod_dep; // Corrected: cod_dep is the raw deptonomi from CRUD
-                    currentUser.nivel = teletrabajos[0].nivel;
-                    localStorage.setItem('user', JSON.stringify(currentUser));
-
-                    updateStaticProfileInfo();
-                }
 
                 fetchCollaborators(); // Update collaborators count after loading teletrabajos
                 updateUI();
@@ -653,32 +645,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderAreaChart('forecastChart', forecastChart, forecastData, forecastLabels);
 
-        // 6. Top Remote Workers List (Quarterly)
-        if (topRemoteList) {
-            topRemoteList.innerHTML = '';
-            const currentQuarter = Math.floor(currentMonth / 3);
+        // 6. Top Remote Workers List (By Quarter)
+        const quarters = [
+            { id: 'topRemoteListQ1', index: 0 },
+            { id: 'topRemoteListQ2', index: 1 },
+            { id: 'topRemoteListQ3', index: 2 },
+            { id: 'topRemoteListQ4', index: 3 }
+        ];
 
-            const ranking = collaborators
-                .map(c => {
-                    const quarterlyFechas = (c.fechas || []).filter(f => {
-                        const d = new Date(typeof f === 'string' ? f : f.fecha);
-                        return d.getFullYear() === currentYear && Math.floor(d.getMonth() / 3) === currentQuarter;
+        quarters.forEach(q => {
+            const listEl = document.getElementById(q.id);
+            if (listEl) {
+                listEl.innerHTML = '';
+                const ranking = collaborators
+                    .map(c => {
+                        const quarterlyFechas = (c.fechas || []).filter(f => {
+                            const d = new Date(typeof f === 'string' ? f : f.fecha);
+                            return d.getFullYear() === currentYear && Math.floor(d.getMonth() / 3) === q.index;
+                        });
+                        return { nombre: c.nombre, count: quarterlyFechas.length };
+                    })
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5)
+                    .filter(r => r.count > 0);
+
+                if (ranking.length === 0) {
+                    listEl.innerHTML = '<li class="ranking-item" style="opacity: 0.5; font-size: 0.8rem; justify-content: center;">Sin registros</li>';
+                } else {
+                    ranking.forEach((r, idx) => {
+                        const li = document.createElement('li');
+                        li.className = 'ranking-item';
+                        li.innerHTML = `
+                            <span class="ranking-name">${idx + 1}. ${r.nombre}</span>
+                            <span class="ranking-value">${r.count} <small>días</small></span>
+                        `;
+                        listEl.appendChild(li);
                     });
-                    return { nombre: c.nombre, count: quarterlyFechas.length };
-                })
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 5);
-
-            ranking.forEach((r, idx) => {
-                const li = document.createElement('li');
-                li.className = 'ranking-item';
-                li.innerHTML = `
-                    <span class="ranking-name">${idx + 1}. ${r.nombre}</span>
-                    <span class="ranking-value">${r.count} días</span>
-                `;
-                topRemoteList.appendChild(li);
-            });
-        }
+                }
+            }
+        });
     }
 
     function renderBarChart(id, chartVar, data, labels, label) {

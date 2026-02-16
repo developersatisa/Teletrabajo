@@ -1,14 +1,20 @@
-from fastapi import FastAPI, Depends, HTTPException, Body
+from fastapi import FastAPI, Depends, HTTPException, Body, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
 from typing import List
 import os
 
 import crud, models, schemas, database
 
-app = FastAPI(title="Teletrabajo API")
+app = FastAPI(title="Teletrabajo Atisa")
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"❌ ERROR DE VALIDACIÓN: {exc.errors()}")
+    return await request.app.default_exception_handler(request, exc)
 
 app.add_middleware(
     CORSMiddleware,

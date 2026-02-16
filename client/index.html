@@ -221,11 +221,35 @@
                         </ul>
                     </div>
 
-                    <div class="card list-card">
-                        <h3>Top Colaboradores (Trimestre)</h3>
-                        <ul id="topRemoteList" class="ranking-list">
-                            <!-- Populated by JS -->
-                        </ul>
+                    <div class="card list-card" style="grid-column: span 12;">
+                        <h3>Ránking de Colaboradores por Trimestre</h3>
+                        <div class="quarters-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: var(--atisa-azul); margin-bottom: 0.5rem; border-bottom: 2px solid var(--atisa-azul); padding-bottom: 5px;">
+                                    T1 (Ene-Mar)</h4>
+                                <ul id="topRemoteListQ1" class="ranking-list"></ul>
+                            </div>
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: var(--atisa-verde-claro); margin-bottom: 0.5rem; border-bottom: 2px solid var(--atisa-verde-claro); padding-bottom: 5px;">
+                                    T2 (Abr-Jun)</h4>
+                                <ul id="topRemoteListQ2" class="ranking-list"></ul>
+                            </div>
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: var(--atisa-naranja); margin-bottom: 0.5rem; border-bottom: 2px solid var(--atisa-naranja); padding-bottom: 5px;">
+                                    T3 (Jul-Sep)</h4>
+                                <ul id="topRemoteListQ3" class="ranking-list"></ul>
+                            </div>
+                            <div class="quarter-box">
+                                <h4
+                                    style="color: #6366f1; margin-bottom: 0.5rem; border-bottom: 2px solid #6366f1; padding-bottom: 5px;">
+                                    T4 (Oct-Dic)</h4>
+                                <ul id="topRemoteListQ4" class="ranking-list"></ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
