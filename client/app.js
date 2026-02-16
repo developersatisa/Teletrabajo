@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalMonthDaysKpi = document.getElementById('totalMonthDaysKpi');
     const avgWeeklyKpi = document.getElementById('avgWeeklyKpi');
     const totalYearDaysKpi = document.getElementById('totalYearDaysKpi');
+    const topDayKpi = document.getElementById('topDayKpi');
     const topRemoteList = document.getElementById('topRemoteList');
 
     let monthlyChart = null;
@@ -530,9 +531,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const monthRecords = teamRecords.filter(r => r.dateObj.getMonth() === currentMonth && r.dateObj.getFullYear() === currentYear);
         if (totalMonthDaysKpi) totalMonthDaysKpi.textContent = monthRecords.length;
 
-        // KPI: Total Year Days (User)
-        const userYearRecords = teletrabajos.filter(t => new Date(t.fecha).getFullYear() === currentYear);
-        if (totalYearDaysKpi) totalYearDaysKpi.textContent = userYearRecords.length;
+        // KPI: Top Requested Day (Team)
+        const dayCounts = {};
+        teamRecords.forEach(r => {
+            if (r.dateObj.getFullYear() === currentYear) {
+                dayCounts[r.fecha] = (dayCounts[r.fecha] || 0) + 1;
+            }
+        });
+
+        let topDate = '-';
+        let maxCount = 0;
+        Object.entries(dayCounts).forEach(([date, count]) => {
+            if (count > maxCount) {
+                maxCount = count;
+                topDate = date;
+            }
+        });
+
+        if (topDayKpi) {
+            topDayKpi.textContent = topDate !== '-' ? `${formatDate(topDate)} (${maxCount})` : '-';
+        }
 
         // KPI: Avg Weekly Days per person (Team)
         // Hardcoded estimation: days / 4 weeks / team size
