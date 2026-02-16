@@ -486,13 +486,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // KPI: Team Coverage Today
-        const peopleToday = collaborators.filter(c =>
+        // KPI: Team Presence Today (In Office)
+        const peopleRemoteToday = collaborators.filter(c =>
             c.fechas && c.fechas.some(f => (typeof f === 'string' ? f : f.fecha) === todayStr)
         ).length;
         const totalTeam = collaborators.length || 1;
-        const coveragePercent = Math.round((peopleToday / totalTeam) * 100);
-        if (coverageKpi) coverageKpi.textContent = `${coveragePercent}%`;
+        const peopleOfficeToday = totalTeam - peopleRemoteToday;
+        const presencePercent = Math.round((peopleOfficeToday / totalTeam) * 100);
+
+        if (coverageKpi) coverageKpi.textContent = `${presencePercent}%`;
 
         // KPI: Total Days current Month (Team)
         const monthRecords = teamRecords.filter(r => r.dateObj.getMonth() === currentMonth && r.dateObj.getFullYear() === currentYear);
