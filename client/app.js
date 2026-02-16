@@ -409,7 +409,24 @@ document.addEventListener('DOMContentLoaded', () => {
             div.className = 'calendar-day';
             div.textContent = i;
             const fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-            if (teletrabajos.some(t => t.fecha === fullDate)) div.classList.add('selected');
+            if (teletrabajos.some(t => t.fecha === fullDate)) {
+                div.classList.add('selected');
+
+                // Add delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'day-delete-btn';
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                deleteBtn.title = 'Eliminar solicitud';
+
+                deleteBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation(); // Prevent opening modal
+                    const record = teletrabajos.find(t => t.fecha === fullDate);
+                    if (record && confirm(`¿Seguro que quieres eliminar el teletrabajo del día ${formatDate(fullDate)}?`)) {
+                        await deleteTeletrabajo(record.id);
+                    }
+                });
+                div.appendChild(deleteBtn);
+            }
 
             // Show count of people teleworking this day
             const collaboratingPeople = collaborators.filter(c =>
