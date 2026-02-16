@@ -12,6 +12,7 @@ class Usuario(Base):
 
 class Trabajador(Base):
     __tablename__ = "trabajadores"
+    __table_args__ = {"schema": "e01101"}
     id_usuario = Column(Integer, ForeignKey("e01101.usuarios.id"), primary_key=True)
     nombre = Column(String(255))
     coddep = Column(String(100))
