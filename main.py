@@ -69,28 +69,9 @@ def get_collaborators(deptonomi: str, db: Session = Depends(database.get_db)):
 def read_teletrabajos(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     return crud.get_teletrabajos(db, skip=skip, limit=limit)
 
-@app.post("/teletrabajos/", response_model=List[schemas.Teletrabajo])
+@app.post("/teletrabajos/", response_model=schemas.Teletrabajo)
 def create_teletrabajo(tele_data: schemas.TeletrabajoCreate, db: Session = Depends(database.get_db)):
-    # Create a list of dates between start and end
-    from datetime import timedelta
-    
-    # Simple logic: if fecha_hasta is provided, create records for all workdays between them
-    # For now, let's create records for every day in the range
-    current_date = tele_data.fecha_ini
-    created_records = []
-    
-    while current_date <= tele_data.fecha_hasta:
-        # Avoid weekends if needed? For now, let's just add all.
-        new_tele = schemas.TeletrabajoSingleCreate(
-            id_usuario=tele_data.id_usuario,
-            fecha=current_date,
-            descripcion=tele_data.descripcion,
-            periodo=tele_data.periodo
-        )
-        created_records.append(crud.create_teletrabajo(db=db, teletrabajo=new_tele))
-        current_date += timedelta(days=1)
-        
-    return created_records
+    return crud.create_teletrabajo(db=db, teletrabajo=tele_data)
 
 @app.delete("/teletrabajos/{tele_id}")
 def delete_teletrabajo(tele_id: int, db: Session = Depends(database.get_db)):

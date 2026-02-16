@@ -242,22 +242,51 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const formData = new FormData(requestForm);
         const data = Object.fromEntries(formData.entries());
-        data.id_usuario = currentUser.id;
+
+        const start = new Date(data.fecha_ini);
+        const end = new Date(data.fecha_hasta);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            showNotification('Selecciona fechas válidas', 'error');
+            return;
+        }
+
+        const requests = [];
+        let current = new Date(start);
+
+        while (current <= end) {
+            // Check if it's a weekend (optional, but usually desired for telework)
+            // If user wants ALL days, we send all.
+            const singleRequestData = {
+                id_usuario: currentUser.id,
+                fecha: current.toISOString().split('T')[0],
+                descripcion: data.descripcion,
+                periodo: getCurrentPeriod(current)
+            };
+
+            requests.push(
+                fetch('/teletrabajos/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(singleRequestData),
+                })
+            );
+
+            current.setDate(current.getDate() + 1);
+        }
 
         try {
-            const response = await fetch('/teletrabajos/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
+            const responses = await Promise.all(requests);
+            const allOk = responses.every(r => r.ok);
 
-            if (response.ok) {
+            if (allOk) {
                 requestModal.style.display = 'none';
                 requestForm.reset();
                 fetchTeletrabajos();
-                showNotification('Solicitud enviada correctamente');
+                showNotification(`Solicitud(es) enviada(s): ${requests.length} día(s)`);
             } else {
-                showNotification('Error al enviar la solicitud', 'error');
+                showNotification('Algunas solicitudes fallaron', 'error');
+                fetchTeletrabajos();
             }
         } catch (error) {
             console.error('Error:', error);

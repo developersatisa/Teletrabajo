@@ -7,15 +7,8 @@ class TeletrabajoBase(BaseModel):
     descripcion: Optional[str] = None
     periodo: Optional[str] = None
 
-class TeletrabajoSingleCreate(TeletrabajoBase):
+class TeletrabajoCreate(TeletrabajoBase):
     id_usuario: int
-
-class TeletrabajoCreate(BaseModel):
-    id_usuario: int
-    fecha_ini: date
-    fecha_hasta: date
-    descripcion: Optional[str] = None
-    periodo: Optional[str] = None
 
 class Teletrabajo(TeletrabajoBase):
     id: int
