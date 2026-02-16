@@ -811,20 +811,33 @@ textarea:focus {
 
 .statistics-main-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(12, 1fr);
     gap: 1.5rem;
 }
 
-.main-chart {
+.span-12 {
+    grid-column: span 12;
+}
+
+.span-6 {
+    grid-column: span 6;
+}
+
+.span-4 {
     grid-column: span 4;
 }
 
+/* Keep old classes for fallback but we will use the new ones */
+.main-chart {
+    grid-column: span 8;
+}
+
 .secondary-chart {
-    grid-column: span 2;
+    grid-column: span 4;
 }
 
 .list-card {
-    grid-column: span 2;
+    grid-column: span 4;
 }
 
 .chart-card h3,

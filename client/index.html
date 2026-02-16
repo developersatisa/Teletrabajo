@@ -186,42 +186,23 @@
                 </div>
 
                 <div class="statistics-main-grid">
-                    <div class="card chart-card main-chart">
-                        <h3>Tendencia de Teletrabajo Mensual</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="monthlyChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="card chart-card secondary-chart">
-                        <h3>Densidad por Día de la Semana</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="weekdayChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="card chart-card secondary-chart">
+                    <!-- LINE 1: Presence & Forecast (2 items) -->
+                    <div class="card chart-card span-6">
                         <h3>Distribución de Presencialidad Hoy</h3>
                         <div class="chart-wrapper">
                             <canvas id="presenceChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="card chart-card secondary-chart">
+                    <div class="card chart-card span-6">
                         <h3>Previsión de Remoto (Próximos 7 días)</h3>
                         <div class="chart-wrapper">
                             <canvas id="forecastChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="card list-card">
-                        <h3>Días con más Teletrabajo</h3>
-                        <ul id="topDaysList" class="ranking-list">
-                            <!-- Populated by JS -->
-                        </ul>
-                    </div>
-
-                    <div class="card list-card" style="grid-column: span 12;">
+                    <!-- LINE 2: Team Ranking (Full width) -->
+                    <div class="card list-card span-12">
                         <h3>Ránking de Colaboradores por Trimestre</h3>
                         <div class="quarters-grid"
                             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
@@ -250,6 +231,28 @@
                                 <ul id="topRemoteListQ4" class="ranking-list"></ul>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- LINE 3: Others (3 items) -->
+                    <div class="card chart-card span-4">
+                        <h3>Tendencia de Teletrabajo Mensual</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card span-4">
+                        <h3>Densidad por Día de la Semana</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="weekdayChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card list-card span-4">
+                        <h3>Días con más Teletrabajo</h3>
+                        <ul id="topDaysList" class="ranking-list">
+                            <!-- Populated by JS -->
+                        </ul>
                     </div>
                 </div>
             </div>
