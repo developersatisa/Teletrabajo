@@ -226,9 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 
-    newRequestBtn.addEventListener('click', () => {
-        requestModal.style.display = 'block';
-    });
+    if (newRequestBtn) {
+        newRequestBtn.addEventListener('click', () => {
+            requestModal.style.display = 'block';
+        });
+    }
 
     closeModal.addEventListener('click', () => {
         requestModal.style.display = 'none';
@@ -247,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const end = new Date(data.fecha_hasta);
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            showNotification('Selecciona fechas válidas', 'error');
+            showNotification('Fechas no válidas', 'error');
             return;
         }
 
@@ -255,8 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let current = new Date(start);
 
         while (current <= end) {
-            // Check if it's a weekend (optional, but usually desired for telework)
-            // If user wants ALL days, we send all.
             const singleRequestData = {
                 id_usuario: currentUser.id,
                 fecha: current.toISOString().split('T')[0],
@@ -276,16 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const responses = await Promise.all(requests);
-            const allOk = responses.every(r => r.ok);
+            const results = await Promise.all(requests);
+            const allOk = results.every(res => res.ok);
 
             if (allOk) {
                 requestModal.style.display = 'none';
                 requestForm.reset();
                 fetchTeletrabajos();
-                showNotification(`Solicitud(es) enviada(s): ${requests.length} día(s)`);
+                showNotification('Solicitud(es) enviada(s) correctamente');
             } else {
-                showNotification('Algunas solicitudes fallaron', 'error');
+                showNotification('Error al enviar algunas solicitudes', 'error');
                 fetchTeletrabajos();
             }
         } catch (error) {
