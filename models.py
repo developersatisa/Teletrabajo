@@ -5,13 +5,14 @@ from database import Base
 
 class Usuario(Base):
     __tablename__ = "usuarios"
+    __table_args__ = {"schema": "e01101"}
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     nombre = Column(String(255)) # Some db schemas use this for full name
 
 class Trabajador(Base):
     __tablename__ = "trabajadores"
-    id_usuario = Column(Integer, ForeignKey("usuarios.id"), primary_key=True)
+    id_usuario = Column(Integer, ForeignKey("e01101.usuarios.id"), primary_key=True)
     nombre = Column(String(255))
     coddep = Column(String(100))
     nombredep = Column(String(100))
