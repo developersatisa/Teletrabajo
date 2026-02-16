@@ -56,6 +56,33 @@ document.addEventListener('DOMContentLoaded', () => {
         showLogin();
     }
 
+    // --- Notification System ---
+    const notificationContainer = document.createElement('div');
+    notificationContainer.className = 'notification-container';
+    document.body.appendChild(notificationContainer);
+
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+        notification.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${message}</span>
+        `;
+
+        notificationContainer.appendChild(notification);
+
+        // Show with small delay for animation
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 400);
+        }, 3000);
+    }
+
     // --- Auth Logic ---
 
     loginForm.addEventListener('submit', async (e) => {
@@ -80,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert('Error de conexión con el servidor');
+            showNotification('Error de conexión con el servidor', 'error');
         }
     });
 
@@ -226,11 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 requestModal.style.display = 'none';
                 requestForm.reset();
                 fetchTeletrabajos();
+                showNotification('Solicitud enviada correctamente');
             } else {
-                alert('Error al enviar la solicitud');
+                showNotification('Error al enviar la solicitud', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
+            showNotification('Error de red al enviar la solicitud', 'error');
         }
     });
 
@@ -421,8 +450,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 deleteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation(); // Prevent opening modal
                     const record = teletrabajos.find(t => t.fecha === fullDate);
-                    if (record && confirm(`¿Seguro que quieres eliminar el teletrabajo del día ${formatDate(fullDate)}?`)) {
+                    if (record) {
                         await deleteTeletrabajo(record.id);
+                        showNotification('Día eliminado', 'success');
                     }
                 });
                 div.appendChild(deleteBtn);

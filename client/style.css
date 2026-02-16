@@ -168,18 +168,25 @@ body {
 
 .user-profile {
     margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.profile-top {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-profile img {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border-radius: 12px;
     border: 2px solid var(--atisa-verde-claro);
+    flex-shrink: 0;
 }
 
 .user-info .name {
@@ -190,6 +197,36 @@ body {
 .user-info .role {
     font-size: 0.8rem;
     opacity: 0.8;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.profile-action-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.profile-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.profile-action-btn.logout:hover {
+    background: #ef4444;
+    color: white;
 }
 
 /* Main Content */
@@ -369,7 +406,7 @@ header {
     position: absolute;
     top: 4px;
     right: 4px;
-    background: rgba(239, 68, 68, 0.2);
+    background: #ef4444;
     color: white;
     border: none;
     border-radius: 4px;
@@ -378,17 +415,20 @@ header {
     font-size: 0.7rem;
     cursor: pointer;
     display: none;
+    /* Oculto por defecto */
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
 }
 
 .calendar-day.selected:hover .day-delete-btn {
     display: flex;
+    /* Aparece rojo al hacer hover en el día */
 }
 
 .day-delete-btn:hover {
-    background: #ef4444;
+    background: #dc2626;
     transform: scale(1.1);
 }
 
@@ -839,4 +879,55 @@ textarea:focus {
     .list-card {
         grid-column: span 6;
     }
+}
+
+/* Notification System (Toasts) */
+.notification-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.notification {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 300px;
+    border-left: 5px solid var(--atisa-azul);
+    transform: translateX(120%);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    font-weight: 600;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-left-color: var(--atisa-verde-claro);
+}
+
+.notification.error {
+    border-left-color: #ef4444;
+}
+
+.notification i {
+    font-size: 1.2rem;
+}
+
+.notification.success i {
+    color: var(--atisa-verde-claro);
+}
+
+.notification.error i {
+    color: #ef4444;
 }

@@ -50,34 +50,38 @@
                     <li class="active" data-view="dashboard"><i class="fas fa-home"></i> Inicio</li>
                     <li data-view="collaborators"><i class="fas fa-users"></i> Colaboradores</li>
                     <li data-view="statistics"><i class="fas fa-chart-line"></i> Estadísticas</li>
-                    <li><i class="fas fa-cog"></i> Ajustes</li>
-                    <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                    <li data-view="settings"><i class="fas fa-cog"></i> Ajustes</li>
                 </ul>
             </nav>
             <div class="user-profile">
-                <img id="userAvatar" src="https://ui-avatars.com/api/?name=U&background=9CBA39&color=fff" alt="User">
-                <div class="user-info">
-                    <p class="name" id="userNameDisplay">Usuario</p>
-                    <p class="role" id="userRoleDisplay">Empleado</p>
-                    <p class="role" id="userDeptDisplay" style="font-size: 0.75rem; opacity: 0.6; margin-top: 2px;">
-                        Departamento</p>
+                <div class="profile-top">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=U&background=9CBA39&color=fff"
+                        alt="User">
+                    <div class="user-info">
+                        <p class="name" id="userNameDisplay">Usuario</p>
+                        <p class="role" id="userRoleDisplay">Empleado</p>
+                        <p class="role" id="userDeptDisplay" style="font-size: 0.75rem; opacity: 0.6; margin-top: 2px;">
+                            Departamento</p>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button class="profile-action-btn" id="themeToggle" title="Cambiar modo">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="profile-action-btn logout" id="logoutBtn" title="Cerrar Sesión">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
         </aside>
 
         <main class="main-content">
             <header>
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar solicitudes...">
+                <div class="header-status">
+                    <!-- Espacio para título o estado si fuera necesario -->
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary" id="themeToggle" title="Cambiar modo">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <button class="btn btn-primary" id="newRequestBtn">
-                        <i class="fas fa-plus"></i> Nueva Solicitud
-                    </button>
+                    <!-- Las acciones se han movido al perfil -->
                 </div>
             </header>
 
