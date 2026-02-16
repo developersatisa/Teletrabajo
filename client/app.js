@@ -87,37 +87,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Auth Logic ---
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const loginError = document.getElementById('loginError');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const loginError = document.getElementById('loginError');
 
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
 
-            if (response.ok) {
-                const user = await response.json();
-                currentUser = user;
-                localStorage.setItem('user', JSON.stringify(user));
-                showApp();
-            } else {
-                loginError.style.display = 'block';
+                if (response.ok) {
+                    const user = await response.json();
+                    currentUser = user;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    showApp();
+                } else {
+                    if (loginError) loginError.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showNotification('Error de conexión con el servidor', 'error');
             }
-        } catch (error) {
-            console.error('Login error:', error);
-            showNotification('Error de conexión con el servidor', 'error');
-        }
-    });
+        });
+    }
 
-    logoutBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        localStorage.removeItem('user');
-        location.reload();
-    });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            location.reload();
+        });
+    }
 
     function showApp() {
         loginScreen.style.display = 'none';
@@ -187,10 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    prevMonthBtn.addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        updateUI();
-    });
+    if (prevMonthBtn) {
+        prevMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            updateUI();
+        });
+    }
 
     // Navigation Logic
     navLinks.forEach(link => {
@@ -221,10 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    nextMonthBtn.addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        updateUI();
-    });
+    if (nextMonthBtn) {
+        nextMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            updateUI();
+        });
+    }
 
     if (newRequestBtn) {
         newRequestBtn.addEventListener('click', () => {
@@ -232,67 +240,73 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    closeModal.addEventListener('click', () => {
-        requestModal.style.display = 'none';
-    });
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            if (requestModal) requestModal.style.display = 'none';
+        });
+    }
 
-    window.addEventListener('click', (e) => {
-        if (e.target === requestModal) requestModal.style.display = 'none';
-    });
+    if (window) {
+        window.addEventListener('click', (e) => {
+            if (e.target === requestModal) requestModal.style.display = 'none';
+        });
+    }
 
-    requestForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(requestForm);
-        const data = Object.fromEntries(formData.entries());
+    if (requestForm) {
+        requestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(requestForm);
+            const data = Object.fromEntries(formData.entries());
 
-        const start = new Date(data.fecha_ini);
-        const end = new Date(data.fecha_hasta);
+            const start = new Date(data.fecha_ini);
+            const end = new Date(data.fecha_hasta);
 
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            showNotification('Fechas no válidas', 'error');
-            return;
-        }
-
-        const requests = [];
-        let current = new Date(start);
-
-        while (current <= end) {
-            const singleRequestData = {
-                id_usuario: currentUser.id,
-                fecha: current.toISOString().split('T')[0],
-                descripcion: data.descripcion,
-                periodo: getCurrentPeriod(current)
-            };
-
-            requests.push(
-                fetch('/teletrabajos/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(singleRequestData),
-                })
-            );
-
-            current.setDate(current.getDate() + 1);
-        }
-
-        try {
-            const results = await Promise.all(requests);
-            const allOk = results.every(res => res.ok);
-
-            if (allOk) {
-                requestModal.style.display = 'none';
-                requestForm.reset();
-                fetchTeletrabajos();
-                showNotification('Solicitud(es) enviada(s) correctamente');
-            } else {
-                showNotification('Error al enviar algunas solicitudes', 'error');
-                fetchTeletrabajos();
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                showNotification('Fechas no válidas', 'error');
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showNotification('Error de red al enviar la solicitud', 'error');
-        }
-    });
+
+            const requests = [];
+            let current = new Date(start);
+
+            while (current <= end) {
+                const singleRequestData = {
+                    id_usuario: currentUser.id,
+                    fecha: current.toISOString().split('T')[0],
+                    descripcion: data.descripcion,
+                    periodo: getCurrentPeriod(current)
+                };
+
+                requests.push(
+                    fetch('/teletrabajos/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(singleRequestData),
+                    })
+                );
+
+                current.setDate(current.getDate() + 1);
+            }
+
+            try {
+                const results = await Promise.all(requests);
+                const allOk = results.every(res => res.ok);
+
+                if (allOk) {
+                    if (requestModal) requestModal.style.display = 'none';
+                    requestForm.reset();
+                    fetchTeletrabajos();
+                    showNotification('Solicitud(es) enviada(s) correctamente');
+                } else {
+                    showNotification('Error al enviar algunas solicitudes', 'error');
+                    fetchTeletrabajos();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error de red al enviar la solicitud', 'error');
+            }
+        });
+    }
 
     async function fetchTeletrabajos() {
         try {
