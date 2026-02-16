@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHorizontalBarChart('weekdayChart', weekdayChart, weekdayData, ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']);
 
         // 4. Presence Chart (Donut)
-        renderDonutChart('presenceChart', presenceChart, [peopleToday, totalTeam - peopleToday], ['Remoto', 'Presencial']);
+        renderDonutChart('presenceChart', presenceChart, [peopleRemoteToday, peopleOfficeToday], ['Remoto', 'Presencial']);
 
         // 5. Forecast Chart (Next 7 Days)
         const forecastLabels = [];
